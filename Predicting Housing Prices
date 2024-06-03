@@ -1,0 +1,154 @@
+
+# MindsDB Use Case Tutorial: Predicting Housing Prices
+
+This tutorial demonstrates how to use MindsDB to predict housing prices. We will cover the installation of MindsDB, setting up a SQLite database, training a model, and making predictions.
+
+## Prerequisites
+
+- Python 3.6 or higher
+- pip (Python package installer)
+
+## Step 1: Installing MindsDB
+
+First, open your terminal and install MindsDB using pip:
+
+```bash
+pip install mindsdb
+```
+
+Once installed, start MindsDB:
+
+```bash
+mindsdb
+```
+
+## Step 2: Setting Up the Database
+
+We'll use a simple SQLite database for this tutorial. Create a Python script named `setup_db.py` and add the following code to create the database and a table for housing data:
+
+```python
+import sqlite3
+
+# Connect to SQLite database (or create it if it doesn't exist)
+conn = sqlite3.connect('housing.db')
+cursor = conn.cursor()
+
+# Create a table for housing data
+cursor.execute('''
+CREATE TABLE housing_data (
+    id INTEGER PRIMARY KEY,
+    size FLOAT,
+    bedrooms INTEGER,
+    age INTEGER,
+    price FLOAT
+)
+''')
+
+# Insert sample data into the table
+cursor.execute('''
+INSERT INTO housing_data (size, bedrooms, age, price) VALUES
+(2100, 3, 15, 400000),
+(1600, 2, 5, 330000),
+(2400, 4, 20, 450000),
+(1400, 2, 10, 320000)
+''')
+
+# Commit changes and close the connection
+conn.commit()
+conn.close()
+```
+
+Run the script to create the database and table:
+
+```bash
+python setup_db.py
+```
+
+## Step 3: Connecting MindsDB to the Database
+
+Next, we will connect MindsDB to our SQLite database. Create a new Python script named `connect_mindsdb.py` and add the following code:
+
+```python
+import mindsdb
+from mindsdb import Predictor
+
+# Connect MindsDB to the SQLite database
+mdb = mindsdb.connect('sqlite:///housing.db')
+```
+
+## Step 4: Training the Model
+
+We'll create a predictor to learn from our housing data. Add the following code to `connect_mindsdb.py`:
+
+```python
+# Create and train the predictor
+predictor = Predictor(name='housing_price_predictor')
+predictor.learn(from_data='SELECT * FROM housing_data', to_predict='price')
+```
+
+Run the script to train the model:
+
+```bash
+python connect_mindsdb.py
+```
+
+## Step 5: Making Predictions
+
+With the model trained, we can now predict housing prices for new data. Create a new Python script named `predict_price.py` and add the following code:
+
+```python
+import sqlite3
+from mindsdb import Predictor
+
+# Insert new data for prediction
+conn = sqlite3.connect('housing.db')
+cursor = conn.cursor()
+
+cursor.execute('''
+INSERT INTO housing_data (size, bedrooms, age) VALUES
+(1800, 3, 8)
+''')
+
+conn.commit()
+conn.close()
+
+# Connect MindsDB to the SQLite database
+mdb = mindsdb.connect('sqlite:///housing.db')
+
+# Load the trained predictor
+predictor = Predictor(name='housing_price_predictor')
+
+# Predict the price for the new house
+result = predictor.predict(when={'size': 1800, 'bedrooms': 3, 'age': 8})
+print(result)
+```
+
+Run the script to make a prediction:
+
+```bash
+python predict_price.py
+```
+
+The result will show the predicted price based on the new data provided.
+
+## Conclusion
+
+Congratulations! You've learned how to:
+
+- Install and set up MindsDB.
+- Connect MindsDB to a SQLite database.
+- Train a machine learning model on housing data.
+- Make predictions using the trained model.
+
+MindsDB simplifies machine learning, making it accessible for everyone. For more information and advanced usage, visit the [MindsDB documentation](https://mindsdb.github.io/mindsdb/).
+
+## Additional Resources
+
+- [MindsDB GitHub](https://github.com/mindsdb/mindsdb)
+- [MindsDB Documentation](https://mindsdb.github.io/mindsdb/)
+
+Feel free to share your use cases and contributions on the MindsDB GitHub repository. Happy modeling!
+
+---
+
+You can customize this tutorial further based on your specific requirements or additional features you want to highlight.
